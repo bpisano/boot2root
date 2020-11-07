@@ -1,6 +1,6 @@
 
 
-# Boot-2-root
+# **Boot-2-root**
 
 Après avoir téléchargé l’ISO, on a commencé les réglages de la VM sur VirtualBox
 Dans « Network », nous sommes passés en « Host-Only Adapter », puis nous avons lancé la VM
@@ -9,7 +9,7 @@ Dans « Network », nous sommes passés en « Host-Only Adapter », puis nous av
 
 > 
 
-## **Étape 1**
+# **Étape 1**
 
   
 
@@ -89,7 +89,7 @@ Ces identifiants nous permettent de nous connecter en FTP avec le port 21 comme 
 
 
 
-## **Étape 2**
+# **Étape 2**
 
   
 
@@ -106,149 +106,71 @@ Après avoir hash avec sha256 nous obtenions le mot de passe de Laurie qui étai
 
 **_330b845f32185747e4f8ca15d40ca59796035c89ea809fb5d30f4da83ecf45a4_**
 
-  
+# **Etape 3**
 
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-**Etape 3**
-
-  
-
-La connexion en ssh se fait donc sur **ssh -p 22** [laurie@192.168.56.101](mailto:laurie@192.168.56.101)
+La connexion en ssh se fait donc sur **`ssh -p 22 laurie@192.168.56.101`**
 
 Sur la session de Laurie on trouve un fichier BOMB qui nous dit que ca va se passer en 6 étapes.
 
 Il y a également un README qui nous explique que le fichier bomb va nous permettre de trouver le mot de passe de Thor pour se connecter en SSH
 
-  
 
-  
-
-**Diffuse this bomb!**
-
-**When you have all the password use it as "thor" user with ssh.**
-
-  
-
-**HINT:**
-
-**P**
-
-**2**
-
-**b**
-
-  
-
-**o**
-
-**4**
-
-  
-
-**NO SPACE IN THE PASSWORD (password is case sensitive).**
-
-  
+    Diffuse this bomb!
+    When you have all the password use it as "thor" user with ssh.
+      
+    HINT:
+    P
+    2
+    b
+      
+    o
+    4
+      
+    NO SPACE IN THE PASSWORD (password is case sensitive).
 
 Nous avons téléchargé et utilisé Cutter ce qui nous a permis de décompilé le programme.
 
-On se rend compte dans le main qu’il a « **_phase_1 phase_2 phase_3 phase_4 phase_5 phase_6_** »
+On se rend compte dans le main qu’il a **`phase_1 phase_2 phase_3 phase_4 phase_5 phase_6`**
 
-  
+ 
 
-**_Phase_1_**
-
-  
+##  **_Phase_1_**
 
 En se baladant dans le fichier C liée a phase_1, nous avons trouvé la phrase
 
-**_Public speaking is very easy._**
+**`Public speaking is very easy.`**
 
 Cette phrase est donc la solution pour la phase 1
 
-  
+## **Phase_2**
 
   
 
-**_Phase_2_**
-
-  
-
-On se rend compte dans le code C décompilé qu’il y a une sorte de suite dans le calcul,
+On se rend compte dans le code C décompilé qu’il y a une sorte de suite dans le calcul.
 
 L’indice dans le README nous indique que la deuxième input sera un « 2 »
-
 On sait en voyant le code que le résultat est une entrée de 6 input.
+ 
+ Initialement, on pensait que c’était la suite de fibonacci, mais c’était enfaite une suite factorielle.
+
+Le résultat est donc **`1 2 6 24 120 720`**
+
+##  **Phase_3**
+
+Encore une fois avec le code décompilé de la phase3 on se rend compte que le code est très logique et qu’il y a donc 3 solutions possible. 
+**`1 b 214`** ou **`2 b 755`** ou **`7 b 524`**
 
   
 
-Initialement, on pensait que c’était la suite de fibonacci, mais c’était enfaite une suite factorielle.
-
-Le résultat est donc **_1 2 6 24 120 720_**
-
-  
-
-**_Phase_3_**
-
-  
-
-Encore une fois avec le code décompilé de la phase3 on se rend compte que le code est très logique et qu’il y a donc 3 solutions possible. **_1 b 214_** ou **_2 b 755_** ou **_7 b 524_**
-
-  
-
-**_Phase_4_**
+##  **Phase_4**
 
   
 
 Le code est encore une fois assez logique et nous fait penser à la suite de Fibonacci.
 
-Le résultat est 55 et donc nous comparons 55 par rapport à la suite de fibonacci est donc **_10_**. Néanmoins, on voit dans la condition qu’on ne doit pas commencer par le 1, donc l’index de la suite est enfaite 9. Le résultat de cette phase_4 est donc **_9_**
+Le résultat est 55 et donc nous comparons 55 par rapport à la suite de fibonacci est donc **`10`**. Néanmoins, on voit dans la condition qu’on ne doit pas commencer par le 1, donc l’index de la suite est enfaite 9. Le résultat de cette phase_4 est donc **`9`**
 
-  
-
-**_Phase_5_**
-
-  
+##  **Phase_5**
 
 Dans le code décompilé, on se rend compte qu’il y a cette chaine de caractère « **_isrveawhobpnutfg_** » On se rend également compté qu’il y a un masque binaire affecté à ce code de 15 (0xf)
 
@@ -260,45 +182,33 @@ On voit également le mot « giants » et on se rend compte qu’il a été fait
 
 On fait donc un reverse de cela avec un code python (merci bpisano)
 
-**_/script/phase_5.py_**
+**`python /script/phase_5.py`**
 
-On obtient donc le code **_opekma_**
+On obtient donc le code **`opekma`**
 
-  
-
-**_Phase_6_**
+## **Phase_6**
 
   
 
 Ici, c’est légèrement plus complexe. On a aucun réel indice nous permettant de nous donner le code. Par contre on remarque plusieurs conditions qui peuvent nous être utiles.
 
-  
+Le code commence par **4** (voir README)
 
-Le code commence par **_4_** (voir README)
+Il doit avoir **6** nombres
 
-Il doit avoir **_6_** nombres
+Les nombres sont compris entre **1 et 6**
 
-Les nombres sont compris entre **_1 et 6_**
+On va donc faire un brutforce en python nous permettant de trouver le mot de passe. (Merci bpisano encore)  
 
-  
+**`python /script/phase_6.py`**
 
-On va donc faire un brutforce en python nous permettant de trouver le mot de passe. (Merci bpisano encore)
-
-  
-
-**_/script/phase_6.py_**
-
-On obtient donc le code **_426315_**
-
-  
+On obtient donc le code **`426315`**
 
 En additionnant tout les codes obtenus, le résultat est donc
 
-**_Publicspeakingisveryeasy.126241207201b2149opekmq426135_**
+**`Publicspeakingisveryeasy.126241207201b2149opekmq426135`**
 
-  
-
-**Etape 4**
+# **Etape 4**
 
   
 
@@ -314,75 +224,18 @@ Au préalable, on a modifié légèrement les instructions en enlevant les instr
 
 On obtient un dessin avec le mot **_SLASH_**
 
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
 A la fin du fichier turtle, nous avions une indications nous faisant comprendre qu’il fallait hasher le mot de passe. Nous avons testé en sha1 et en md5. Le bon hash était MD5 ce qui nous a donné
 
 **_646da671ca01bb5d84dbb5fb2238dc8e_**
 
-  
+## **Etape 5**
 
-  
-
-**Etape 5**
-
-  
-
+ 
 On peut donc maintenant se connecter en ssh avec le user zaz
 
 Il y a un exécutable **_exploit_me_** qui nous donnent quelques informations puisque cet exécutable a les privilèges root, donc lorsqu’on lance cette exécutable, c’est comme si nous étions root.
 
-  
-
-En décompilant le code, nous voyons un code très simple
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
+  En décompilant le code, nous voyons un code très simple
 
 On s’aperçoit que le programme prend l’argument envoyé, fait un strcpy et l’affiche.
 
