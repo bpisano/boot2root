@@ -5,7 +5,7 @@ Après plusieurs recherches, nous nous sommes rendu compte que nous pouvions dev
 ## Récupération et exécution du code
 Nous avons récupéré les accès PhpMyAdmin grace au writeup1.md.
 
-On se connecte en Administateur à [PhpyAdmin](https://192.168.56.101/phpmyadmin/) avec ces identifiants.
+On se connecte en administateur à [PhpyAdmin](https://192.168.56.101/phpmyadmin/) avec ces identifiants.
 ```
 root
 Fg-'kKXBj87E:aJ$
