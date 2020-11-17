@@ -32,6 +32,13 @@ firefart:fiGIOrsN6mdSc:0:0:pwned:/root:/bin/bash
 
 mmap: b7fda000
 ```
+
+Le programme nous demande un mot de passe, on saisit le mot de passe de notre choix comme `125boot2root`
+
+Nous pouvons maintenant lancer la commande `su`
+et rentrer le mot de passe préalablement choisis.
+
+
 Un `whoami` nous affichera l'utilisateur `firefart`. Son `id` est bien `0`, nous somme donc passé `root`.
 ```
 > whoami
@@ -39,3 +46,14 @@ firefart
 > id
 uid=0(firefart) gid=0(root) groups=0(root)
 ```
+
+## Comprendre la faille
+
+Lorsqu'on fait un `cat /etc/passwd`, on obtient plusieurs lignes avec les différents users. Par exemple lmezard
+
+`lmezard:x:1001:1001:laurie,,,:/home/lmezard:/bin/bash` 
+
+`1001` est l'uid de `lmezard`
+
+Le `x` indique que son mot de passe est stocké dans un fichier.
+Lorsqu'on éxécute le script, le `x` va être remplacé par un hash du mot de passe saisis ! 
