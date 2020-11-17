@@ -545,7 +545,7 @@ Pour éxcuter notre shell, nous avons besoin de trouver l'adresse de la fonction
 ```
 > gdb exploit_me
 [...]
- > (gdb) break main
+> (gdb) break main
 [...]
 > (gdb) run
 [...]
