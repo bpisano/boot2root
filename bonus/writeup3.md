@@ -47,13 +47,13 @@ firefart
 uid=0(firefart) gid=0(root) groups=0(root)
 ```
 
-## Mais qu'est qu'il se passe derrière ? 
+## Comprendre la faille
 
 Lorsqu'on fait un `cat /etc/passwd`, on obtient plusieurs lignes avec les différents users. Par exemple lmezard
 
 `lmezard:x:1001:1001:laurie,,,:/home/lmezard:/bin/bash` 
 
-`1001` est l'uid de `Lmezard`
+`1001` est l'uid de `lmezard`
 
 Le `x` indique que son mot de passe est stocké dans un fichier.
 Lorsqu'on éxécute le script, le `x` va être remplacé par un hash du mot de passe saisis ! 

