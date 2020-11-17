@@ -543,11 +543,11 @@ Nous allons donc exploiter ce `SEGFAULT` avec la faille `Ret2libc`.
 ### Adressage
 Pour éxcuter notre shell, nous avons besoin de trouver l'adresse de la fonction `system` et de la chaine `"/bin/sh"`. Le but étant de faire un call à `system` avec ce paramètre. Pour cela, on exécute `gdb` sur notre exécutable avec les commandes suivante :
 ```
-gdb exploit_me
+> gdb exploit_me
 [...]
-(gdb) break main
+ > (gdb) break main
 [...]
-(gdb) run
+> (gdb) run
 [...]
 ```
 
