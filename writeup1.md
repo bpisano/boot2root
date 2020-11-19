@@ -536,7 +536,7 @@ bool main(char **argv, char **envp)
     return (int32_t)argv < 2;
 }
 ```
-Le programme est très simple : il affiche sur l'entrée standard le premier argument reçu en ligne de commande. Néanmoins, on remarque que le programme alloue un buffer de 140 octets et copie l'argument dedans. Si notre argument excède 140 charactères, le progamme `SEGFAULT`.
+Le programme est très simple : il affiche sur l'entrée standard le premier argument reçu en ligne de commande. Néanmoins, on remarque que le programme alloue un buffer de 140 octets et copie l'argument dedans. Si notre argument excède 140 caractères, le progamme `SEGFAULT`.
 
 Nous allons donc exploiter ce `SEGFAULT` avec la faille `Ret2libc`.
 
